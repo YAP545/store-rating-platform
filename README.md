@@ -71,7 +71,7 @@ The project includes seeded demo accounts for all application roles. You can log
 | :--- | :--- | :--- | :--- |
 | **SYSTEM ADMIN** | `admin@demo.com` | `Admin@1234` | Full platform control: Manage users, manage stores, owner assignments, reports & analytics, settings, and system audit logs. |
 | **STORE OWNER 1** | `owner1@demo.com` | `Owner@1234` | Manages "TechWorld Electronics Hub" & "BookHaven International Bookstore". Access to Owner Dashboard, store metrics, & customer rating logs. |
-| **STORE OWNER 2** | `owner2@demo.com` | `Owner@234` | Manages "Organic Supermarket & Fresh Market". Access to Owner Dashboard & customer feedback analytics. |
+| **STORE OWNER 2** | `owner2@demo.com` | `Owner@1234` | Manages "Organic Supermarket & Fresh Market". Access to Owner Dashboard & customer feedback analytics. |
 | **NORMAL USER 1** | `user1@demo.com` | `User@1234` | Customer account. Browse stores directory, view details, submit 1–5 star ratings, & modify existing feedback. |
 | **NORMAL USER 2** | `user2@demo.com` | `User@1234` | Customer account. Browse stores, rate stores, & manage personal account. |
 | **NORMAL USER 3** | `user3@demo.com` | `User@1234` | Customer account. Browse stores, rate stores, & manage personal account. |
