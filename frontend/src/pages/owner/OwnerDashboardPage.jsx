@@ -47,6 +47,7 @@ const OwnerDashboardPage = () => {
 
   // EDIT STORE MODAL
   const [isEditStoreModalOpen, setIsEditStoreModalOpen] = useState(false);
+  const [editingStore, setEditingStore] = useState(null);
   const [editFormData, setEditFormData] = useState({ name: '', email: '', address: '' });
   const [updatingStore, setUpdatingStore] = useState(false);
 
@@ -100,19 +101,21 @@ const OwnerDashboardPage = () => {
   };
 
   // EDIT STORE HANDLERS
-  const handleOpenEditStoreModal = () => {
-    if (!data?.store) return;
+  const handleOpenEditStoreModal = (st) => {
+    if (!st) return;
+    setEditingStore(st);
     setEditFormData({
-      name: data.store.name || '',
-      email: data.store.email || '',
-      address: data.store.address || '',
+      name: st.name || '',
+      email: st.email || '',
+      address: st.address || '',
     });
     setIsEditStoreModalOpen(true);
   };
 
   const handleSaveStore = async (e) => {
     e.preventDefault();
-    if (!data?.store?.id) return;
+    const targetStore = editingStore || data?.store;
+    if (!targetStore?.id) return;
 
     if (!editFormData.name.trim()) {
       showToast('Store name is required', 'error');
@@ -125,7 +128,7 @@ const OwnerDashboardPage = () => {
 
     setUpdatingStore(true);
     try {
-      await API.put(`/stores/${data.store.id}`, {
+      await API.put(`/stores/${targetStore.id}`, {
         name: editFormData.name.trim(),
         email: editFormData.email.trim(),
         address: editFormData.address.trim(),
@@ -239,6 +242,7 @@ const OwnerDashboardPage = () => {
   }
 
   const { store, ratingUsers } = data;
+  const assignedStores = data.stores || (store ? [store] : []);
   const rawRatingList = ratingUsers?.data || [];
 
   // CALCULATE EXACT RATING DISTRIBUTION (5★, 4★, 3★, 2★, 1★)
@@ -309,7 +313,7 @@ const OwnerDashboardPage = () => {
 
       {/* SUMMARY STATS GRID */}
       <div className="stats-grid" style={{ marginBottom: '24px' }}>
-        <StatCard title="My Stores" value={analyticsData?.storesCount || 1} icon={Store} color="#6366f1" />
+        <StatCard title="My Stores" value={data?.storesCount || assignedStores.length} icon={Store} color="#6366f1" />
         <StatCard title="Total Ratings" value={store.totalRatings} icon={Users} color="#10b981" />
         <StatCard title="Average Rating" value={`${store.averageRating} / 5`} icon={Star} color="#f59e0b" />
         <StatCard title="5★ Ratings" value={ratingCounts[5]} icon={Award} color="#ec4899" />
@@ -317,60 +321,72 @@ const OwnerDashboardPage = () => {
         <StatCard title="3★ Ratings" value={ratingCounts[3]} icon={Award} color="#8b5cf6" />
       </div>
 
-      {/* MY STORES SECTION */}
+      {/* MY STORES SECTION - RENDER ALL ASSIGNED STORES */}
       <div style={{ marginBottom: '28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <Store size={20} color="var(--primary)" />
-          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>My Assigned Stores</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>My Assigned Stores ({assignedStores.length})</h2>
         </div>
 
-        <div className="glass-panel" style={{ padding: '24px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)', color: '#ffffff' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' }}>
-                  <Store size={28} />
-                </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {assignedStores.map((st) => (
+            <div
+              key={st.id}
+              className="glass-panel"
+              style={{
+                padding: '24px',
+                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
+                color: '#ffffff',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px' }}>
                 <div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#ffffff' }}>{store.name}</h3>
-                  <div style={{ display: 'flex', gap: '16px', color: '#94a3b8', fontSize: '13px', marginTop: '4px', flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Mail size={14} /> {store.email}
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MapPin size={14} /> {store.address}
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    <div style={{ padding: '12px', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' }}>
+                      <Store size={28} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#ffffff' }}>{st.name}</h3>
+                      <div style={{ display: 'flex', gap: '16px', color: '#94a3b8', fontSize: '13px', marginTop: '4px', flexWrap: 'wrap' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Mail size={14} /> {st.email}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={14} /> {st.address}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ background: 'rgba(15, 23, 42, 0.7)', padding: '12px 18px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <p style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600, margin: 0 }}>Overall Rating</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                  <StarRating value={parseFloat(store.averageRating)} readOnly size={18} />
-                  <span style={{ fontSize: '20px', fontWeight: 800, color: '#fbbf24' }}>{store.averageRating}</span>
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>({store.totalRatings} ratings)</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.7)', padding: '12px 18px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                    <p style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600, margin: 0 }}>Overall Rating</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                      <StarRating value={parseFloat(st.averageRating)} readOnly size={18} />
+                      <span style={{ fontSize: '20px', fontWeight: 800, color: '#fbbf24' }}>{st.averageRating}</span>
+                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>({st.totalRatings} ratings)</span>
+                    </div>
+                  </div>
+
+                  {/* EDIT OWN STORE BUTTON */}
+                  <button className="btn btn-secondary" onClick={() => handleOpenEditStoreModal(st)}>
+                    <Pencil size={15} /> Edit Store
+                  </button>
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setSelectedStoreForDetails(st);
+                      setIsDetailsModalOpen(true);
+                    }}
+                  >
+                    <Eye size={16} /> View Details
+                  </button>
                 </div>
               </div>
-
-              {/* EDIT OWN STORE BUTTON */}
-              <button className="btn btn-secondary" onClick={handleOpenEditStoreModal}>
-                <Pencil size={15} /> Edit Store
-              </button>
-
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setSelectedStoreForDetails(store);
-                  setIsDetailsModalOpen(true);
-                }}
-              >
-                <Eye size={16} /> View Details
-              </button>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 

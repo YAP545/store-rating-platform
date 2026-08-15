@@ -22,7 +22,6 @@ export class OwnerService {
       throw new NotFoundException('No store found registered under your Store Owner account');
     }
 
-    const store = stores[0];
     const storeIds = stores.map((s) => s.id);
 
     const stats = await this.ratingRepository
@@ -80,15 +79,32 @@ export class OwnerService {
       updatedAt: r.updatedAt,
     }));
 
+    const storesList = await Promise.all(
+      stores.map(async (s) => {
+        const sStats = await this.ratingRepository
+          .createQueryBuilder('rating')
+          .select('AVG(rating.rating)', 'avgRating')
+          .addSelect('COUNT(rating.id)', 'totalRatings')
+          .where('rating.storeId = :storeId', { storeId: s.id })
+          .getRawOne();
+
+        const sAvg = sStats?.avgRating ? parseFloat(sStats.avgRating).toFixed(1) : '0.0';
+        const sTotal = parseInt(sStats?.totalRatings || '0', 10);
+
+        return {
+          id: s.id,
+          name: s.name,
+          email: s.email,
+          address: s.address,
+          averageRating: sAvg,
+          totalRatings: sTotal,
+        };
+      })
+    );
+
     return {
-      store: {
-        id: store.id,
-        name: store.name,
-        email: store.email,
-        address: store.address,
-        averageRating: avgRating,
-        totalRatings: totalRatings,
-      },
+      store: storesList[0],
+      stores: storesList,
       storesCount: stores.length,
       ratingUsers: {
         data: ratingUsers,
