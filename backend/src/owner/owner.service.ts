@@ -106,6 +106,8 @@ export class OwnerService {
       store: storesList[0],
       stores: storesList,
       storesCount: stores.length,
+      overallAverageRating: avgRating,
+      overallTotalRatings: totalRatings,
       ratingUsers: {
         data: ratingUsers,
         meta: {

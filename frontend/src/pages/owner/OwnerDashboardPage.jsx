@@ -314,8 +314,8 @@ const OwnerDashboardPage = () => {
       {/* SUMMARY STATS GRID */}
       <div className="stats-grid" style={{ marginBottom: '24px' }}>
         <StatCard title="My Stores" value={data?.storesCount || assignedStores.length} icon={Store} color="#6366f1" />
-        <StatCard title="Total Ratings" value={store.totalRatings} icon={Users} color="#10b981" />
-        <StatCard title="Average Rating" value={`${store.averageRating} / 5`} icon={Star} color="#f59e0b" />
+        <StatCard title="Total Ratings" value={data?.overallTotalRatings ?? store.totalRatings} icon={Users} color="#10b981" />
+        <StatCard title="Average Rating" value={`${data?.overallAverageRating || store.averageRating} / 5`} icon={Star} color="#f59e0b" />
         <StatCard title="5★ Ratings" value={ratingCounts[5]} icon={Award} color="#ec4899" />
         <StatCard title="4★ Ratings" value={ratingCounts[4]} icon={Award} color="#3b82f6" />
         <StatCard title="3★ Ratings" value={ratingCounts[3]} icon={Award} color="#8b5cf6" />
@@ -559,7 +559,8 @@ const OwnerDashboardPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {[5, 4, 3, 2, 1].map((stars) => {
             const count = ratingCounts[stars] || 0;
-            const percentage = store.totalRatings > 0 ? Math.round((count / store.totalRatings) * 100) : 0;
+            const totalOwnerRatings = data?.overallTotalRatings || rawRatingList.length;
+            const percentage = totalOwnerRatings > 0 ? Math.round((count / totalOwnerRatings) * 100) : 0;
 
             return (
               <div key={stars} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
